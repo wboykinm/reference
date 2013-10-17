@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>Reference Overlay Example</title>
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
+  <link href='http://fonts.googleapis.com/css?family=Noto+Sans' rel='stylesheet' type='text/css'>
+  <link href="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.css" rel="stylesheet">
+  <style>
+	body {
+	  padding: 0;
+	  margin: 0;
+	  font-family: 'Noto Sans', sans-serif;
+	}
+	#map_canvas1, #map_canvas2{
+    height:100%;
+    width:100%;
+    position:absolute;
+    
+  }
+  #labels{
+    font-weight:bold;
+    font-size:1.2em;
+    
+  }
+	#map_canvas2 {
+	  pointer-events: none;
+	}
+	#footer {
+	  position: absolute;
+	  bottom: 0;
+	  left: 0;
+	  right: 0;
+	  background: #777;
+	  z-index: 999;
+	  overflow: auto;
+	  padding: 5px;
+	  opacity: 0.95;
+	  color: #fff;
+	}
+	.info {
+	  padding: 6px 8px;
+	  font: 14px/16px Arial, Helvetica, sans-serif;
+	  background: #FFF;
+	  background: rgba(255,255,255,0.8);
+	  box-shadow: 0 0 15px rgba(0,0,0,0.2);
+	  border-radius: 5px;
+	}
+	.info h4 {
+	  margin: 0 0 5px;
+	  color: #777;
+	}
+	.box-control {
+	  right: 5px;
+	  top: 30px;
+	  position:absolute;
+	}
+	.legend {
+	  text-align: left;
+	  line-height: 18px;
+	  color: #fff;
+	  background-color:rgba(119,119,119,0.8);
+	}
+	.legend i {
+	  width: 18px;
+	  height: 18px;
+	  float: left;
+	  margin-right: 8px;
+	  opacity:0.9;
+	}
+  </style>
+</head>
+
+<body>
+  <div id="labels">
+   <div id="map_canvas1"></div>
+    <div id="map_canvas2"></div>
+  <div id="footer">
+    <div class="container" style="padding-left:20px;">
+      <h2>World Hunger, 2010</h2>
+
+      <h4>Prevalence of undernourishment as a percentage of total population - <br />reported by IFPRI as a component of the <a href="http://www.ifpri.org/ghi/2013" target="_blank">Global Hunger Index (GHI)</a></h4>
+    </div>
+  </div>
+  
+  <!-- ADD THE LEGEND MANUALLY (WE DO IT PROGRAMATICALLY IN LEAFLET) -->
+  <div class="info legend box-control">
+    <i style="background:#fff"></i> No Data<br>
+    <i style="background:#FFFFD4"></i> 2-5%<br>
+    <i style="background:#FEE391"></i> 5-10%<br>
+    <i style="background:#FEC44F"></i> 10-20%<br>
+    <i style="background:#FE9929"></i> 20-30%<br>
+    <i style="background:#EC7014"></i> 30-40%<br>
+    <i style="background:#CC4C02"></i> 40-50%<br>
+    <i style="background:#8C2D04"></i> &gt;50%
+  </div>
+  
+  <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?sensor=false"></script>
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+  
+  <script>
+    var map1;
+    var map2;
+
+    // STYLE THE BASELAYER TO BE CLEAN
+    var baseStyles = [
+      {
+        stylers: [
+          { saturation: -90 }
+        ]
+      },{
+        elementType: "labels",
+        stylers: [
+          { visibility: "off" }
+        ]
+     }
+   ]
+   // STYLE THE REFERENCE OVERLAY WITH A TRANSPARENT BACKGROUND
+   var overlayStyles = [
+      {
+        elementType: "geometry",
+        stylers: [
+          { visibility: "off" },
+          { saturation: -100 }
+        ]
+      },{
+        featureType: "road",
+        stylers: [
+          { visibility: "simplified" }
+        ]
+      },{
+        featureType: "administrative",
+        elementType: "labels",
+        stylers: [
+          { visibility: "on" }
+        ]
+      }
+    ]
+
+  function initialize() {
+    var myOptions = {
+      zoom: 3,
+      maxZoom: 8,
+      center: new google.maps.LatLng(10, 0),
+      mapTypeId: google.maps.MapTypeId.ROADMAP
+    };
+    map1 = new google.maps.Map($('#map_canvas1')[0], myOptions);
+    map2 = new google.maps.Map($('#map_canvas2')[0], myOptions);
+
+    myOptions.center = new google.maps.LatLng(10,0);
+    myOptions.zoom = 3;
+
+    map1.set('styles', baseStyles);
+    map2.set('styles', overlayStyles);
+
+    //INSTANTIATING THE MAP SEEMS TO OVERRIDE TRANSPARENT CSS
+    $('#map_canvas2').css('background','transparent')
+
+    // ADD THEMATIC LAYER FROM FUSION TABLES
+    layer_1 = new google.maps.FusionTablesLayer({
+      query: {
+        select: 'ghi2013dat',
+        from: '12UZPFCx7xisjpaRZlW6oxLMR11jmeqeQ5Xpff34'
+      },
+      // STYLE THE FUSION TABLE LAYER
+      styles: [{
+    	    polygonOptions: {
+    	      fillOpacity: 0.9
+ 	        }
+ 	    }, {
+     	    where: "ghi2013dat < 0",
+     	    polygonOptions: {
+     	     fillColor: "#FFFFFF"
+     	    }
+      }, {
+          where: "ghi2013dat > 2 AND ghi2013dat <=5",
+          polygonOptions: {
+           fillColor: "#FFFFD4"
+          }
+     	}, {
+     	    where: "ghi2013dat > 5 AND ghi2013dat <=10",
+     	    polygonOptions: {
+     	     fillColor: "#FEE391"
+     	    }
+     	}, {
+     	    where: "ghi2013dat > 10 AND ghi2013dat <=20",
+      	  polygonOptions: {
+      	    fillColor: "#FEC44F"
+      	  }
+      }, {
+      	  where: "ghi2013dat > 20 AND ghi2013dat <=30",
+      	  polygonOptions: {
+      	    fillColor: "#FE9929"
+      	  }
+      }, {
+      	  where: "ghi2013dat > 30 AND ghi2013dat <=40",
+      	  polygonOptions: {
+      	    fillColor: "#EC7014"
+      	  }
+      }, {
+      	  where: "ghi2013dat > 40 AND ghi2013dat <=50",
+      	  polygonOptions: {
+      	    fillColor: "#CC4C02"
+      	  }
+      }, {
+      	  where: "ghi2013dat > 50 AND ghi2013dat <=80",
+      	  polygonOptions: {
+      	    fillColor: "#8C2D04"
+      	  }
+  	  }],
+      
+      map: map1,
+      suppressInfoWindows: false
+    });
+
+    map1.bindTo('zoom',map2)
+    map1.bindTo('center',map2)
+
+  }
+
+  google.maps.event.addDomListener(window, 'load', initialize);
+  
+  </script>
+</body>
+</html>
