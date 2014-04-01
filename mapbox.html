@@ -171,7 +171,7 @@
 	});
 	
 	// ADD THE REFERENCE OVERLAY (THE TOP OF THE SANDWICH) HERE:
-	var topPane = map._createPane('leaflet-top-pane', map.getPanes().mapPane);
+	var topPane = L.DomUtil.create('div', 'leaflet-top-pane', map.getPanes().mapPane);
 	var topLayer = new L.mapbox.tileLayer('landplanner.map-9fnue2aa', {
 	  maxZoom: 17
 	}).addTo(map);

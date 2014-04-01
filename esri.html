@@ -171,7 +171,7 @@
 	});
 	
 	// ADD THE REFERENCE OVERLAY (THE TOP OF THE SANDWICH) HERE:
-	var topPane = map._createPane('leaflet-top-pane', map.getPanes().mapPane);
+	var topPane = L.DomUtil.create('div', 'leaflet-top-pane', map.getPanes().mapPane);
 	var topLayer = new L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Reference_Overlay/MapServer/tile/{z}/{y}/{x}.png', {
 	  maxZoom: 17
 	}).addTo(map);
